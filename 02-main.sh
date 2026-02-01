@@ -1,15 +1,19 @@
+#!/bin/bash
+set -e
+
 echo ""
 echo "🏃  Starting deployment..."
-rm -rf {RELEASE} && mkdir -p {RELEASE} && cd {RELEASE}
+rm -rf "$RELEASE" && mkdir -p "$RELEASE" && cd "$RELEASE"
 
 wget --progress=dot:mega -O- --header="Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/{REPOSITORY_USER}/{REPOSITORY_NAME}/tarball/{COMMIT_HASH}" \
+  "https://api.github.com/repos/${REPOSITORY_USER}/${REPOSITORY_NAME}/tarball/${COMMIT_HASH}" \
   | tar -xz --strip-components=1
 
 echo ""
 echo "🔗  Linking Storage Directory..."
 STORAGE_PATH="$(realpath ../..)/storage"
-[ ! -d "$STORAGE_PATH" ] && mv storage "$STORAGE_PATH" || rm -rf storage
+[ ! -d "$STORAGE_PATH" ] && [ -d storage ] && mv storage "$STORAGE_PATH"
+rm -rf storage
 ln -s "$STORAGE_PATH" storage
 
 echo ""

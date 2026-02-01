@@ -1,6 +1,11 @@
-cd {RELEASE}
+#!/bin/bash
+set -e
 
-{RELOAD_PHP_FPM}
+cd "$RELEASE"
+
+echo ""
+echo "🔄  Reloading PHP-FPM..."
+eval "$RELOAD_PHP_FPM"
 
 echo ""
 echo "🌅  Optimizing Activation..."
