@@ -10,5 +10,7 @@ cd "$RELEASE"
 : "${GITHUB_TOKEN:?GITHUB_TOKEN not set}"
 : "${LARAVEL_ENV_ENCRYPTION_KEY:?LARAVEL_ENV_ENCRYPTION_KEY not set}"
 
+mkdir -p "$PROJECT_DIR"
+
 git init -b main -q
 git remote add origin "https://github.com/${REPOSITORY_USER}/${REPOSITORY_NAME}.git"
