@@ -1,10 +1,13 @@
 #!/bin/bash
 set -e
 
+cd "$RELEASE"
+
 echo ""
 echo "🏃  Starting deployment..."
-rm -rf "$RELEASE" && mkdir -p "$RELEASE" && cd "$RELEASE"
-
+shopt -s dotglob
+rm -rf "$RELEASE"/*
+shopt -u dotglob
 wget --progress=dot:mega -O- --header="Authorization: token $GITHUB_TOKEN" \
   "https://api.github.com/repos/${REPOSITORY_USER}/${REPOSITORY_NAME}/tarball/${COMMIT_HASH}" \
   | tar -xz --strip-components=1
