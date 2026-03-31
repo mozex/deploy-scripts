@@ -4,6 +4,8 @@ Centralized deployment scripts for Laravel applications using Ploi.io with zero-
 
 ## Ploi Pre-Deploy Script
 
+Replace `LARAVEL_ENV_ENCRYPTION_KEY` and `GITHUB_TOKEN` with your own values. The rest of the variables are automatically populated by Ploi, so don't change them.
+
 ```bash
 export LARAVEL_ENV_ENCRYPTION_KEY="base64:..."
 export GITHUB_TOKEN="github_pat_..."
