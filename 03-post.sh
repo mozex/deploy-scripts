@@ -1,15 +1,26 @@
 #!/bin/bash
-set -eo pipefail
-
-cd "$RELEASE"
+# shellcheck disable=SC2154  # RELEASE, RELOAD_PHP_FPM, etc. are provided by Ploi.
+set -euo pipefail
 
 # See 02-main.sh for the meaning of DEPLOY_OUTPUT and the step() helper.
 DEPLOY_OUTPUT="${DEPLOY_OUTPUT:-full}"
 
+# Abort the deploy with a clear message if any named variable is empty or unset.
+require_env() {
+  local missing=0 name
+  for name in "$@"; do
+    if [ -z "${!name:-}" ]; then
+      echo "Deploy aborted: required variable '$name' is not set." >&2
+      missing=1
+    fi
+  done
+  [ "$missing" -eq 0 ] || exit 1
+}
+
 step() {
   local label="$1"; shift
   local summary_re=""
-  if [ "$1" = "--summary" ]; then summary_re="$2"; shift 2; fi
+  if [ "${1:-}" = "--summary" ]; then summary_re="$2"; shift 2; fi
 
   if [ "$DEPLOY_OUTPUT" != "compact" ]; then
     echo ""
@@ -38,5 +49,16 @@ step() {
 
 reload_php_fpm() { eval "$RELOAD_PHP_FPM"; }
 
-step "🔄  Reloading PHP-FPM..." reload_php_fpm
-step "🌅  Optimizing Activation..." composer deploy:after
+main() {
+  require_env RELEASE RELOAD_PHP_FPM
+  cd "$RELEASE"
+
+  local -a composer_cmd
+  read -ra composer_cmd <<< "${SITE_COMPOSER:-composer}"
+
+  step "🔄  Reloading PHP-FPM..." reload_php_fpm
+  step "🌅  Optimizing Activation..." "${composer_cmd[@]}" deploy:after
+}
+
+# Run the deploy unless the test suite sourced this file just for its functions.
+[ "${PLOI_DEPLOY_SOURCE_ONLY:-0}" = "1" ] || main

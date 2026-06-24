@@ -1,5 +1,7 @@
 # Ploi Zero-Downtime Deployment Scripts
 
+[![Tests](https://github.com/mozex/deploy-scripts/actions/workflows/ci.yml/badge.svg)](https://github.com/mozex/deploy-scripts/actions/workflows/ci.yml)
+
 Zero-downtime deployment scripts for Laravel applications on [Ploi.io](https://ploi.io). These scripts replace Ploi's default copy-based deployment with a fresh clone from GitHub on every deploy.
 
 For the full reasoning behind these scripts, including command ordering, environment encryption, and the composer scripts approach, read the companion blog post: [My Zero-Downtime Deployment Setup for Laravel](https://mozex.dev/blog/8-my-zero-downtime-deployment-setup-for-laravel).
@@ -57,6 +59,7 @@ export REPOSITORY_USER="{REPOSITORY_USER}"
 export REPOSITORY_NAME="{REPOSITORY_NAME}"
 export COMMIT_HASH="{COMMIT_HASH}"
 export RELOAD_PHP_FPM="{RELOAD_PHP_FPM}"
+export SITE_COMPOSER="{SITE_COMPOSER}"
 
 # Optional: "compact" hides each step's output and only shows it if a step fails.
 # Leave it unset (or "full") for the current verbose output.
@@ -64,6 +67,8 @@ export RELOAD_PHP_FPM="{RELOAD_PHP_FPM}"
 
 curl -fsSL https://raw.githubusercontent.com/mozex/deploy-scripts/main/01-pre.sh | bash
 ```
+
+`SITE_COMPOSER` pins Composer, and the `@php artisan` commands your deploy scripts run, to the site's configured PHP version instead of the server's default. Ploi expands it to something like `php8.2 /usr/local/bin/composer`. If you leave it out, the scripts fall back to a bare `composer`.
 
 ### 2. Main Deploy Script
 
@@ -76,6 +81,19 @@ curl -fsSL https://raw.githubusercontent.com/mozex/deploy-scripts/main/02-main.s
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mozex/deploy-scripts/main/03-post.sh | bash
 ```
+
+## Testing
+
+The scripts are covered by a [bats](https://github.com/bats-core/bats-core) suite and linted with [ShellCheck](https://www.shellcheck.net), both run on every push through GitHub Actions.
+
+To run them locally:
+
+```bash
+shellcheck 01-pre.sh 02-main.sh 03-post.sh
+bats tests/
+```
+
+The tests mock `composer`, `wget`, and `tar` inside a throwaway sandbox, so nothing touches a real server. They cover the compact and full output modes, the failure-dump path, the environment-variable validation, and the storage symlink.
 
 ## Security
 
