@@ -18,6 +18,25 @@ The three scripts map to Ploi's three deployment phases:
 
 The `deploy:before` and `deploy:after` composer scripts are defined in your application's `composer.json`, not in these scripts. This means your deployment commands live in your codebase, version-controlled and portable. See the [blog post](https://mozex.dev/blog/8-my-zero-downtime-deployment-setup-for-laravel) for a detailed walkthrough of what goes in each.
 
+## Output Modes
+
+A deploy prints a lot: every Composer package extracted, every Vite asset built, every published file. On a large app that's over a thousand lines, and streaming all of it live can lock up a browser tab watching the Ploi log.
+
+The `DEPLOY_OUTPUT` variable controls how much you see:
+
+| Value | Behavior |
+|-------|----------|
+| `full` (default) | Streams every command's output live, exactly as before. Nothing changes if you don't set the variable. |
+| `compact` | Hides each step's output. On success you get one line per step, like `🚚  Running Composer... ✓  (301 installs)`. If a step fails, its full output is printed right before the deploy aborts, so you keep everything you need to debug. |
+
+A successful deploy in compact mode is about ten lines instead of a thousand.
+
+Set it in the Pre Deploy script (the value is inherited by all three phases):
+
+```bash
+export DEPLOY_OUTPUT="compact"
+```
+
 ## Prerequisites
 
 - A Laravel application with `deploy:before` and `deploy:after` composer scripts defined in `composer.json`
@@ -38,6 +57,10 @@ export REPOSITORY_USER="{REPOSITORY_USER}"
 export REPOSITORY_NAME="{REPOSITORY_NAME}"
 export COMMIT_HASH="{COMMIT_HASH}"
 export RELOAD_PHP_FPM="{RELOAD_PHP_FPM}"
+
+# Optional: "compact" hides each step's output and only shows it if a step fails.
+# Leave it unset (or "full") for the current verbose output.
+# export DEPLOY_OUTPUT="compact"
 
 curl -fsSL https://raw.githubusercontent.com/mozex/deploy-scripts/main/01-pre.sh | bash
 ```
