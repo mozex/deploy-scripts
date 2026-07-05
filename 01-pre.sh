@@ -11,4 +11,5 @@ cd "$RELEASE"
 : "${LARAVEL_ENV_ENCRYPTION_KEY:?LARAVEL_ENV_ENCRYPTION_KEY not set}"
 
 git init -b main -q
+git remote remove origin 2>/dev/null || true
 git remote add origin "https://github.com/${REPOSITORY_USER}/${REPOSITORY_NAME}.git"
