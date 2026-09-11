@@ -3,6 +3,11 @@ set -eo pipefail
 
 cd "$RELEASE"
 
+# Ploi substitutes {COMMIT_HASH} wrapped in single quotes, so the Pre Deploy's
+# export COMMIT_HASH="{COMMIT_HASH}" keeps them literally. A SHA never contains
+# a quote, so stripping them is safe whether Ploi quotes the value or not.
+COMMIT_HASH="${COMMIT_HASH//\'/}"
+
 # Output mode:
 #   full    (default) - stream every command's output live, exactly as before
 #   compact           - hide each step's output; print a one-line summary on
